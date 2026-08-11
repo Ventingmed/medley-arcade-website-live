@@ -1,17 +1,1 @@
-{
-  "build": "094",
-  "environment": "production",
-  "maxScores": 5000,
-  "maxScore": 50000,
-  "presenceTtlSeconds": 45,
-  "duelWaitTtlSeconds": 120,
-  "allowedOrigins": [
-    "https://medleyarcade.com",
-    "https://www.medleyarcade.com",
-    "https://medleyarcade.netlify.app",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000"
-  ],
-  "liveGameTtlSeconds": 900,
-  "multiplayerLobbyTtlSeconds": 600
-}
+{"build":"108","environment":"production","maxScores":5000,"maxScore":50000,"presenceTtlSeconds":45,"duelWaitTtlSeconds":120,"allowedOrigins":["https://medleyarcade.com","https://www.medleyarcade.com","https://medleyarcade.netlify.app","http://localhost:8000","http://127.0.0.1:8000"],"liveGameTtlSeconds":900,"multiplayerLobbyTtlSeconds":600}
