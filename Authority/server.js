@@ -20,11 +20,17 @@ function allowedOrigin(req){const o=req.headers.origin||'';if(!o)return '*';cons
 function sse(c,payload){if(c.closed)return;try{c.res.write(`data: ${JSON.stringify(payload)}\n\n`)}catch{c.closed=true}}
 function broadcast(){revision++;const state=publicState();for(const c of clients.values())sse(c,{type:'state',state})}
 async function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',d=>{s+=d;if(s.length>100000){reject(Error('Too large'));req.destroy()}});req.on('end',()=>{try{resolve(s?JSON.parse(s):{})}catch{reject(Error('Bad JSON'))}})})}
+function rewriteScores(){fs.writeFileSync(SCORE_FILE,scores.map(r=>JSON.stringify(r)).join('\n')+(scores.length?'\n':''))}
 function saveScore(r){scores.push(r);seenRuns.add(r.runId);while(scores.length>CONFIG.maxScores)scores.shift();fs.appendFileSync(SCORE_FILE,JSON.stringify(r)+'\n')}
+function bestForPlayer(playerId){const rows=scores.filter(r=>r.playerId===playerId).sort((a,b)=>b.score-a.score||new Date(a.createdAt)-new Date(b.createdAt));return rows[0]||null}
+function hostAuthorized(b){return String(b?.hostCode||'')===String(process.env.HOST_CODE||'host4536')}
 function queueJoin(playerId,name){const existing=duelQueue.find(x=>x.playerId===playerId);if(existing){existing.name=name;existing.lastSeen=now();return existing}const row={id:id('duel'),playerId,name,joinedAt:now(),lastSeen:now()};duelQueue.push(row);return row}
 const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http://localhost');const origin=allowedOrigin(req);if(req.method==='OPTIONS'){res.writeHead(204,{'access-control-allow-origin':origin,'access-control-allow-headers':'content-type','access-control-allow-methods':'GET,POST,OPTIONS'});return res.end()}
  if(url.pathname==='/health')return json(res,200,{ok:true,service:'Medley Arcade Website Live Authority',build:CONFIG.build,state:publicState()},origin);
  if(url.pathname==='/api/state'&&req.method==='GET')return json(res,200,publicState(),origin);
+ if(url.pathname==='/api/player-best'&&req.method==='GET'){const playerId=cleanId(url.searchParams.get('playerId'));if(!playerId)return json(res,400,{ok:false,error:'playerId required'},origin);return json(res,200,{ok:true,best:bestForPlayer(playerId)},origin)}
+ if(url.pathname==='/api/admin/clear-scores'&&req.method==='POST')try{const b=await body(req);if(!hostAuthorized(b))return json(res,403,{ok:false,error:'Host authorization required'},origin);scores.length=0;seenRuns.clear();rewriteScores();broadcast();return json(res,200,{ok:true,cleared:true,state:publicState()},origin)}catch(e){return json(res,400,{ok:false,error:e.message},origin)}
+ if(url.pathname==='/api/admin/delete-score'&&req.method==='POST')try{const b=await body(req);if(!hostAuthorized(b))return json(res,403,{ok:false,error:'Host authorization required'},origin);const scoreId=cleanId(b.scoreId);if(!scoreId)return json(res,400,{ok:false,error:'scoreId required'},origin);const i=scores.findIndex(r=>r.id===scoreId);if(i<0)return json(res,404,{ok:false,error:'Score not found'},origin);const removed=scores.splice(i,1)[0];seenRuns.clear();for(const r of scores)if(r.runId)seenRuns.add(r.runId);rewriteScores();broadcast();return json(res,200,{ok:true,removed,state:publicState()},origin)}catch(e){return json(res,400,{ok:false,error:e.message},origin)}
  if(url.pathname==='/live'&&req.method==='GET'){
    const playerId=cleanId(url.searchParams.get('playerId'))||id('anon'),name=cleanName(url.searchParams.get('name'));
    res.writeHead(200,{'content-type':'text/event-stream; charset=utf-8','cache-control':'no-cache, no-transform','connection':'keep-alive','access-control-allow-origin':origin,'x-accel-buffering':'no'});res.write(': connected\n\n');
@@ -39,4 +45,4 @@ const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http:
  res.writeHead(404,{'content-type':'text/plain; charset=utf-8','access-control-allow-origin':origin});res.end('Not found');
 });
 setInterval(()=>{prune();broadcast()},30000);
-server.listen(PORT,'0.0.0.0',()=>console.log(`Medley_Arcade_Website_Live_081 Authority listening on ${PORT}`));
+server.listen(PORT,'0.0.0.0',()=>console.log(`Medley_Arcade_Website_Live_091 Authority listening on ${PORT}`));
