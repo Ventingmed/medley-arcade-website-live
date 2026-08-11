@@ -1,1 +1,1 @@
-{"name":"medley-arcade-website-live","version":"0.93.0","private":true,"scripts":{"start":"node server.js"},"engines":{"node":">=20"}}
+{"name":"medley-arcade-website-live","version":"0.94.0","private":true,"scripts":{"start":"node server.js"},"engines":{"node":">=20"}}
