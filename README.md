@@ -1,11 +1,6 @@
-# Medley Arcade Website Live Authority — Build 094
+# Medley Arcade Website Live Authority — Build 108
 
-Build 094 preserves the shared leaderboard, personal best, Host Dashboard moderation, presence, live spectator rooms, and duel foundation.
-
-New: real 2–4 player online lobbies. Each person joins from their own browser using their own Arcade Name. The host chooses 2, 3, or 4 seats and cannot start until all requested real players are present. Players and spectators receive the same live room stream; spectator writes remain blocked. Solo, same-device party, and online turn-based scores all use the same shared Shooting Gallery leaderboard.
+Build 108 preserves the shared leaderboard and online-room authority and adds synchronized GAME RESULTS plus a 15-second opt-in multiplayer rematch window. At timeout, 2–4 opted-in players are moved into a fresh rematch room; fewer than two returns the match to home.
 
 Start: `node server.js`
 Health: `/health`
-
-
-Build 094 startup hotfix: opens the Render port before loading persisted scores and adds explicit boot diagnostics.
