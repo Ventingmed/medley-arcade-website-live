@@ -6,3 +6,6 @@ New: real 2–4 player online lobbies. Each person joins from their own browser 
 
 Start: `node server.js`
 Health: `/health`
+
+
+Build 094 startup hotfix: opens the Render port before loading persisted scores and adds explicit boot diagnostics.

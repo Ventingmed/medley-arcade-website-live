@@ -2,7 +2,7 @@
 const http=require('http'),fs=require('fs'),path=require('path'),crypto=require('crypto');
 const ROOT=__dirname,DATA=path.resolve(process.env.DATA_DIR||path.join(ROOT,'data')),CONFIG=JSON.parse(fs.readFileSync(path.join(ROOT,'config.json'),'utf8'));fs.mkdirSync(DATA,{recursive:true});
 const PORT=Number(process.env.PORT)||10000,SCORE_FILE=path.join(DATA,'scores.jsonl'),scores=[],seenRuns=new Set(),clients=new Map(),duelQueue=[],rooms=new Map(),roomClients=new Map();let revision=1;
-try{if(fs.existsSync(SCORE_FILE))for(const line of fs.readFileSync(SCORE_FILE,'utf8').split(/\r?\n/)){if(!line.trim())continue;try{const r=JSON.parse(line);scores.push(r);if(r.runId)seenRuns.add(r.runId)}catch{}}}catch{}
+function loadScoresSafely(){try{if(!fs.existsSync(SCORE_FILE))return;const st=fs.statSync(SCORE_FILE);if(st.size>8*1024*1024){console.warn('Score file exceeds safe startup load limit; starting without preload');return}for(const line of fs.readFileSync(SCORE_FILE,'utf8').split(/\r?\n/)){if(!line.trim())continue;try{const r=JSON.parse(line);scores.push(r);if(r.runId)seenRuns.add(r.runId)}catch{}}console.log(`Loaded ${scores.length} saved score(s)`)}catch(e){console.warn('Score preload skipped:',e&&e.message?e.message:e)}}
 const now=()=>Date.now(),id=p=>p+'_'+crypto.randomBytes(8).toString('hex');
 function cleanName(v){return String(v||'PLAYER').replace(/<[^>]*>/g,'').replace(/[^a-zA-Z0-9 ._\-'’]/g,'').replace(/\s+/g,' ').trim().slice(0,20)||'PLAYER'}
 function cleanId(v){return String(v||'').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,100)}
@@ -46,4 +46,6 @@ const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http:
  if(url.pathname==='/api/duel/heartbeat'&&req.method==='POST')try{const b=await body(req),pid=cleanId(b.playerId),q=duelQueue.find(x=>x.playerId===pid);if(q)q.lastSeen=now();return json(res,200,{ok:true,position:q?duelQueue.indexOf(q)+1:0,state:state()},origin)}catch(e){return json(res,400,{ok:false,error:e.message},origin)}
  if(url.pathname==='/api/duel/leave'&&req.method==='POST')try{const b=await body(req),pid=cleanId(b.playerId),i=duelQueue.findIndex(x=>x.playerId===pid);if(i>=0)duelQueue.splice(i,1);broadcast();return json(res,200,{ok:true,state:state()},origin)}catch(e){return json(res,400,{ok:false,error:e.message},origin)}
  if(url.pathname==='/')return json(res,200,{ok:true,service:'Medley Arcade Website Live Authority',build:CONFIG.build,health:'/health'},origin);res.writeHead(404,{'content-type':'text/plain; charset=utf-8','access-control-allow-origin':origin});res.end('Not found')});
-setInterval(()=>{prune();broadcast()},30000);server.listen(PORT,'0.0.0.0',()=>console.log(`Medley_Arcade_Website_Live_094 Authority listening on ${PORT}`));
+server.on('error',e=>{console.error('Authority server error:',e);process.exitCode=1});
+console.log(`Medley Arcade 094 startup: opening port ${PORT}`);
+server.listen(PORT,'0.0.0.0',()=>{console.log(`Medley_Arcade_Website_Live_094 Authority listening on ${PORT}`);loadScoresSafely();setInterval(()=>{prune();broadcast()},30000)});
