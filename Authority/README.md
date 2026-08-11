@@ -1,18 +1,11 @@
-# Medley Arcade Website Live Authority — Build 081
+# Medley Arcade Website Live Authority — Build 094
 
-Independent .com-first shared service. This is not the Twitch Authority.
+Build 094 preserves the shared leaderboard, personal best, Host Dashboard moderation, presence, live spectator rooms, and duel foundation.
 
-Provides:
-- shared Shooting Gallery leaderboard
-- persistent public Arcade Name keyed to a browser-generated player ID
-- live website presence count
-- recent-score activity
-- Head-to-Head Duel waiting queue foundation
+New: real 2–4 player online lobbies. Each person joins from their own browser using their own Arcade Name. The host chooses 2, 3, or 4 seats and cannot start until all requested real players are present. Players and spectators receive the same live room stream; spectator writes remain blocked. Solo, same-device party, and online turn-based scores all use the same shared Shooting Gallery leaderboard.
 
 Start: `node server.js`
 Health: `/health`
 
-Attach persistent storage (or later a managed database) before relying on scores long-term.
 
-
-Build 091 adds shared player-best lookup plus Host Dashboard shared-board clear/delete endpoints. For testing, host code defaults to host4536; set HOST_CODE in Render before public production and replace hidden-code moderation with authenticated host access.
+Build 094 startup hotfix: opens the Render port before loading persisted scores and adds explicit boot diagnostics.
