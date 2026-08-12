@@ -1,9 +1,12 @@
-# Medley Arcade Website Live Authority — Build 113
+# Medley Arcade Website Live Authority — Build 116
 
-Build 113 preserves the shared leaderboard and online-room authority and adds synchronized GAME RESULTS plus a 15-second opt-in multiplayer rematch window. At timeout, 2–4 opted-in players are moved into a fresh rematch room; fewer than two returns the match to home.
+Build 116 preserves Authority 113 multiplayer/results/rematch behavior and adds shared storage APIs for leaderboard scores, Games voting, and player suggestions.
 
-Start: `node server.js`
-Health: `/health`
+## Persistence
+The Authority now prefers `/var/data/medley-arcade` automatically when `/var/data` is writable (the recommended Render persistent-disk mount). You can also set `DATA_DIR` explicitly. If neither exists, it falls back to `/app/data`; that fallback is shared while the instance runs but is NOT durable across redeploys.
 
+Recommended Render Starter setup: attach a persistent disk mounted at `/var/data`, then deploy Build 116. The startup log explicitly says whether a durable mount was detected.
 
-Build 113: one waiting room per host, lobby heartbeat/leave lifecycle, and reliable join-state authority.
+Persistent files: `scores.jsonl`, `community-votes.json`, `community-suggestions.json`.
+
+Health/state exposes the active data directory so deployment can be verified before relying on it.
